@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Order #{{ order.order_number }} - SweetDelight{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <span class="badge bg-light text-muted border text-uppercase mb-1">Invoice & Tracking</span>
+            <h2 class="fw-bold brand-font mb-0">Order #{{ order.order_number }}</h2>
+            <small class="text-muted">Placed on {{ order.created_at|date:"F d, Y at H:i" }}</small>
+        </div>
+        <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
+            <span class="badge fs-6 {% if order.status == 'delivered' %}bg-success{% elif order.status == 'cancelled' %}bg-danger{% elif order.status == 'pending' %}bg-warning text-dark{% else %}bg-primary{% endif %} text-uppercase px-3 py-2">
+                Status: {{ order.get_status_display }}
+            </span>
+            {% if order.status in 'pending,confirmed' %}
+                <a href="{% url 'orders:cancel' order.pk %}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Cancel this order?');">Cancel Order</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Ordered Items -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+                <h5 class="fw-bold brand-font mb-3">Items in this Delivery</h5>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Cake</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr>
+                                <td>
+                                    <h6 class="fw-bold mb-0">{{ item.cake.name }}</h6>
+                                    {% if item.flavor %}<small class="text-primary d-block">Flavor: {{ item.flavor }}</small>{% endif %}
+                                    {% if item.custom_message %}<small class="text-muted fst-italic">"{{ item.custom_message }}"</small>{% endif %}
+                                </td>
+                                <td>{{ item.quantity }}</td>
+                                <td>₹{{ item.unit_price }}</td>
+                                <td class="fw-bold" style="color: var(--primary-deep);">₹{{ item.total_price }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Delivery Address Card -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <h5 class="fw-bold brand-font mb-2"><i class="fa-solid fa-location-dot text-primary me-2"></i> Shipping Destination</h5>
+                <p class="mb-2 text-dark">{{ order.delivery_address }}</p>
+                {% if order.delivery_date %}
+                    <small class="text-muted d-block"><i class="fa-regular fa-calendar me-1"></i> Preferred Delivery Date: {{ order.delivery_date|date:"M d, Y" }}</small>
+                {% endif %}
+                {% if order.notes %}
+                    <small class="text-muted d-block mt-1"><i class="fa-regular fa-note-sticky me-1"></i> Notes: {{ order.notes }}</small>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Payment Breakdown & Action -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-3">
+                <h5 class="fw-bold brand-font mb-3">Payment Summary</h5>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Subtotal</span>
+                    <span class="fw-bold">₹{{ order.subtotal }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Delivery Charges</span>
+                    {% if order.delivery_charge == 0 %}
+                        <span class="text-success fw-bold">FREE</span>
+                    {% else %}
+                        <span class="fw-bold">₹{{ order.delivery_charge }}</span>
+                    {% endif %}
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fs-5 fw-bold">Grand Total</span>
+                    <span class="fs-4 fw-bold" style="color: var(--primary-deep);">₹{{ order.total_amount }}</span>
+                </div>
+
+                <div class="p-3 rounded-3 mb-3 {% if order.payment_status == 'paid' %}bg-success bg-opacity-10 text-success{% else %}bg-warning bg-opacity-10 text-dark{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="small fw-bold">Payment Status:</span>
+                        <span class="badge {% if order.payment_status == 'paid' %}bg-success{% else %}bg-warning text-dark{% endif %} text-uppercase">
+                            {{ order.get_payment_status_display }}
+                        </span>
+                    </div>
+                </div>
+
+                {% if order.payment_status != 'paid' and order.status != 'cancelled' %}
+                    <a href="{% url 'payments:payment' order.pk %}" class="btn btn-cake-primary w-100 py-2">
+                        <i class="fa-solid fa-credit-card me-1"></i> Pay Now (₹{{ order.total_amount }})
+                    </a>
+                {% endif %}
+            </div>
+
+            <a href="{% url 'orders:list' %}" class="btn btn-outline-secondary w-100">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back to Orders
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+{% block title %}{{ cake.name }} - Details & Booking{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'cakes:home' %}" class="text-decoration-none text-muted">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'cakes:list' %}" class="text-decoration-none text-muted">Menu</a></li>
+            {% if cake.category %}
+                <li class="breadcrumb-item"><a href="{% url 'cakes:category' cake.category.slug %}" class="text-decoration-none text-muted">{{ cake.category.name }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">{{ cake.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-5">
+        <!-- Cake Media Gallery -->
+        <div class="col-lg-6">
+            <div class="card border-0 rounded-4 overflow-hidden shadow-sm" style="background: linear-gradient(135deg, #fef4f6, #fff9ea);">
+                <div style="height: 420px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    {% if cake.thumbnail %}
+                        <img src="{{ cake.thumbnail.url }}" alt="{{ cake.name }}" class="w-100 h-100 object-fit-cover" id="mainCakeImg">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=80" alt="{{ cake.name }}" class="w-100 h-100 object-fit-cover" id="mainCakeImg">
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Thumbnail Reel -->
+            {% if cake.images.all %}
+            <div class="d-flex gap-3 mt-3 overflow-auto pb-2">
+                {% for img in cake.images.all %}
+                <div class="rounded-3 border overflow-hidden" style="width: 80px; height: 80px; cursor: pointer; flex-shrink: 0;" onclick="document.getElementById('mainCakeImg').src = '{{ img.image.url }}'">
+                    <img src="{{ img.image.url }}" class="w-100 h-100 object-fit-cover" alt="{{ img.alt_text|default:cake.name }}">
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Value Highlights -->
+            <div class="row g-3 mt-3 text-center">
+                <div class="col-4">
+                    <div class="p-3 bg-white rounded-3 border">
+                        <i class="fa-solid fa-cake-candles text-primary fs-4 mb-2"></i>
+                        <h6 class="mb-0 fw-bold small">Fresh Daily</h6>
+                        <small class="text-muted">Zero Stale</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-3 bg-white rounded-3 border">
+                        <i class="fa-solid fa-truck text-warning fs-4 mb-2"></i>
+                        <h6 class="mb-0 fw-bold small">Chill Van</h6>
+                        <small class="text-muted">Safe Delivery</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-3 bg-white rounded-3 border">
+                        <i class="fa-solid fa-shield-halved text-success fs-4 mb-2"></i>
+                        <h6 class="mb-0 fw-bold small">100% Hygienic</h6>
+                        <small class="text-muted">FSSAI Certified</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Purchase Information -->
+        <div class="col-lg-6">
+            <div class="ps-lg-2">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-light text-primary border text-uppercase" style="font-size: 0.75rem;">
+                        {{ cake.category.name|default:"Patisserie Specialty" }}
+                    </span>
+                    <span class="badge {% if cake.availability == 'available' %}bg-success{% elif cake.availability == 'pre_order' %}bg-warning text-dark{% else %}bg-danger{% endif %} text-uppercase" style="font-size: 0.75rem;">
+                        {{ cake.get_availability_display }}
+                    </span>
+                </div>
+
+                <h1 class="brand-font fw-bold mb-2 text-dark">{{ cake.name }}</h1>
+
+                <!-- Rating and Reviews count -->
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="text-warning">
+                        <i class="fa-solid fa-star"></i>
+                        <span class="fw-bold text-dark ms-1">{{ cake.get_average_rating|default:"4.9" }}</span>
+                    </div>
+                    <span class="text-muted">|</span>
+                    <a href="#reviewsSection" class="text-decoration-none text-muted small">
+                        <i class="fa-regular fa-comment-dots me-1"></i> {{ reviews.count }} Customer Reviews
+                    </a>
+                </div>
+
+                <!-- Price and Discount -->
+                <div class="d-flex align-items-baseline gap-2 mb-4 p-3 bg-light rounded-3">
+                    <span class="fs-2 fw-bold" style="color: var(--primary-deep);">₹{{ cake.get_effective_price }}</span>
+                    {% if cake.discount_price %}
+                        <span class="fs-5 text-muted text-decoration-line-through">₹{{ cake.price }}</span>
+                        <span class="badge-discount ms-2">{{ cake.get_discount_percentage }}% SAVE</span>
+                    {% endif %}
+                    <small class="text-muted ms-auto">Inclusive of all local taxes</small>
+                </div>
+
+                <p class="text-muted mb-4 lead" style="font-size: 1.05rem;">
+                    {{ cake.description }}
+                </p>
+
+                <!-- Spec Grid -->
+                <div class="row g-2 mb-4">
+                    <div class="col-6">
+                        <div class="p-2 border rounded-3 bg-white">
+                            <small class="text-muted d-block">Weight / Portion</small>
+                            <strong><i class="fa-solid fa-scale-balanced me-1 text-primary"></i> {{ cake.weight|default:"1 Kg Standard" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 border rounded-3 bg-white">
+                            <small class="text-muted d-block">Party Servings</small>
+                            <strong><i class="fa-solid fa-users me-1 text-primary"></i> Serves {{ cake.serves|default:"8-10" }} People</strong>
+                        </div>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <div class="p-2 border rounded-3 bg-white">
+                            <small class="text-muted d-block">Available Flavors</small>
+                            <span class="fw-medium text-dark"><i class="fa-solid fa-spoon me-1 text-primary"></i> {{ cake.flavors|default:"Classic Vanilla, Belgian Chocolate" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add to Cart & Custom Booking Actions -->
+                <div class="card p-4 border-0 shadow-sm rounded-4 mb-4" style="background: #ffffff; border: 1px solid rgba(214,51,132,0.15) !important;">
+                    <form action="{% url 'cart:add' cake.pk %}" method="POST">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted">Quantity</label>
+                                <input type="number" name="quantity" value="1" min="1" max="20" class="form-control text-center fw-bold">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label small fw-bold text-muted">Preferred Flavor</label>
+                                <select name="flavor" class="form-select">
+                                    {% for f in cake.get_flavors_list %}
+                                        <option value="{{ f }}">{{ f }}</option>
+                                    {% empty %}
+                                        <option value="Standard">Standard Flavor</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted">Message on Cake (Optional)</label>
+                                <input type="text" name="custom_message" class="form-control" placeholder="e.g. Happy 25th Birthday Sarah!">
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3 mt-4">
+                            <button type="submit" class="btn btn-cake-primary flex-grow-1 py-3">
+                                <i class="fa-solid fa-basket-shopping me-2"></i> Add To Cart
+                            </button>
+                            <a href="{% url 'orders:book' cake.slug %}" class="btn btn-cake-gold px-4 py-3">
+                                <i class="fa-regular fa-calendar-check me-2"></i> Book For Event
+                            </a>
+                            <a href="{% url 'cart:toggle_wishlist' cake.pk %}" class="btn btn-cake-outline px-3 py-3" title="Save to Wishlist">
+                                <i class="fa-regular fa-heart"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews & Customer Feedback Section -->
+    <div class="mt-5 pt-4 border-top" id="reviewsSection">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <h4 class="brand-font fw-bold mb-4">Customer Reviews ({{ reviews.count }})</h4>
+                
+                <div class="d-flex flex-column gap-3">
+                    {% for rev in reviews %}
+                    <div class="p-3 bg-white rounded-3 border">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div class="fw-bold">{{ rev.user.get_full_name|default:rev.user.username }}</div>
+                            <div class="text-warning small">
+                                {% for i in "12345" %}
+                                    <i class="fa-solid fa-star {% if forloop.counter <= rev.rating %}text-warning{% else %}text-muted text-opacity-25{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <h6 class="mb-1 text-dark">{{ rev.title }}</h6>
+                        <p class="text-muted small mb-1">{{ rev.comment }}</p>
+                        <small class="text-muted text-opacity-75">{{ rev.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 bg-white rounded-3 border">
+                        <i class="fa-regular fa-star text-muted fs-3 mb-2 d-block"></i>
+                        <p class="text-muted mb-0">No reviews yet for this cake. Be the very first to share your thoughts!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card p-4 rounded-4 border-0 shadow-sm bg-white">
+                    <h5 class="fw-bold mb-3">Leave a Review</h5>
+                    {% if user.is_authenticated %}
+                        {% if user_review %}
+                            <div class="alert alert-info small">
+                                <i class="fa-solid fa-circle-check me-1"></i> You have already reviewed this cake! Thank you for sharing your experience.
+                            </div>
+                        {% else %}
+                            <form method="POST">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Your Rating (1 to 5 Stars)</label>
+                                    <select name="rating" class="form-select">
+                                        <option value="5">⭐⭐⭐⭐⭐ (5 Stars - Exceptional)</option>
+                                        <option value="4">⭐⭐⭐⭐ (4 Stars - Great)</option>
+                                        <option value="3">⭐⭐⭐ (3 Stars - Average)</option>
+                                        <option value="2">⭐⭐ (2 Stars - Disappointed)</option>
+                                        <option value="1">⭐ (1 Star - Poor)</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Headline</label>
+                                    <input type="text" name="title" class="form-control" placeholder="e.g. Delicious Belgian Chocolate!" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Detailed Review</label>
+                                    <textarea name="comment" rows="3" class="form-control" placeholder="Share taste, texture, delivery freshness..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-cake-primary w-100">Submit Review</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted small mb-3">Please sign in to write an authentic review for this cake.</p>
+                            <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-cake-outline btn-sm">Log In to Review</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

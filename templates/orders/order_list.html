@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}My Orders - SweetDelight{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold brand-font mb-0"><i class="fa-solid fa-box-open text-primary me-2"></i> My Order History</h2>
+            <p class="text-muted small mb-0">Track real-time status and invoices of your sweet cravings</p>
+        </div>
+        <a href="{% url 'cakes:list' %}" class="btn btn-cake-primary btn-sm">Order More Cakes</a>
+    </div>
+
+    {% if orders %}
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Order ID</th>
+                        <th>Order Date</th>
+                        <th>Items Count</th>
+                        <th>Total Amount</th>
+                        <th>Order Status</th>
+                        <th>Payment</th>
+                        <th class="text-end pe-4">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ord in orders %}
+                    <tr>
+                        <td class="ps-4 fw-bold">#{{ ord.order_number }}</td>
+                        <td class="small text-muted">{{ ord.created_at|date:"M d, Y - H:i" }}</td>
+                        <td>{{ ord.items.count }} item(s)</td>
+                        <td class="fw-bold fs-6" style="color: var(--primary-deep);">₹{{ ord.total_amount }}</td>
+                        <td>
+                            <span class="badge {% if ord.status == 'delivered' %}bg-success{% elif ord.status == 'cancelled' %}bg-danger{% elif ord.status == 'pending' %}bg-warning text-dark{% else %}bg-primary{% endif %} text-uppercase">
+                                {{ ord.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if ord.payment_status == 'paid' %}bg-success{% else %}bg-secondary{% endif %} text-uppercase">
+                                {{ ord.get_payment_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <a href="{% url 'orders:detail' ord.pk %}" class="btn btn-sm btn-cake-outline">View Order</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm p-5">
+        <div class="mb-4 d-inline-flex p-4 rounded-circle" style="background: var(--pastel-pink); color: var(--primary-deep); font-size: 3rem;">
+            <i class="fa-solid fa-box-open"></i>
+        </div>
+        <h3 class="fw-bold brand-font">No Orders Placed Yet</h3>
+        <p class="text-muted mb-4">You haven't ordered any cakes from us yet. Start ordering your favorites today!</p>
+        <a href="{% url 'cakes:list' %}" class="btn btn-cake-primary px-4 py-2">Explore Delicious Cakes</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

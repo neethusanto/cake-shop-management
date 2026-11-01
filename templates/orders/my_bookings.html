@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}My Pre-Bookings - SweetDelight{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold brand-font mb-0"><i class="fa-solid fa-calendar-check text-warning me-2"></i> Event Cake Bookings</h2>
+            <p class="text-muted small mb-0">Scheduled celebrations and custom design orders</p>
+        </div>
+        <a href="{% url 'cakes:list' %}?availability=pre_order" class="btn btn-cake-primary btn-sm">
+            <i class="fa-solid fa-plus me-1"></i> New Booking
+        </a>
+    </div>
+
+    {% if bookings %}
+    <div class="row g-4">
+        {% for b in bookings %}
+        <div class="col-md-6">
+            <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <span class="badge bg-light text-muted border mb-1">#BK-{{ b.pk }}</span>
+                        <h5 class="fw-bold mb-0">{{ b.cake.name }}</h5>
+                    </div>
+                    <span class="badge {% if b.status == 'delivered' %}bg-success{% elif b.status == 'confirmed' %}bg-primary{% elif b.status == 'cancelled' %}bg-danger{% else %}bg-warning text-dark{% endif %} text-uppercase">
+                        {{ b.get_status_display }}
+                    </span>
+                </div>
+
+                <div class="row g-2 text-muted small mb-3">
+                    <div class="col-6"><i class="fa-regular fa-calendar me-1 text-primary"></i> {{ b.delivery_date|date:"M d, Y" }}</div>
+                    <div class="col-6"><i class="fa-regular fa-clock me-1 text-primary"></i> {{ b.delivery_time }}</div>
+                    <div class="col-6"><i class="fa-solid fa-layer-group me-1 text-primary"></i> Quantity: {{ b.quantity }}</div>
+                    <div class="col-6 fw-bold" style="color: var(--primary-deep);"><i class="fa-solid fa-receipt me-1"></i> ₹{{ b.total_amount }}</div>
+                </div>
+
+                {% if b.custom_message %}
+                    <p class="small text-muted mb-3 fst-italic p-2 bg-light rounded">"{{ b.custom_message }}"</p>
+                {% endif %}
+
+                <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
+                    <small class="text-muted text-truncate" style="max-width: 220px;"><i class="fa-solid fa-location-dot me-1"></i> {{ b.delivery_address }}</small>
+                    <a href="{% url 'orders:booking_detail' b.pk %}" class="btn btn-sm btn-cake-outline">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm p-5">
+        <div class="mb-4 d-inline-flex p-4 rounded-circle" style="background: #fff8e6; color: var(--gold-accent); font-size: 3rem;">
+            <i class="fa-solid fa-calendar-days"></i>
+        </div>
+        <h3 class="fw-bold brand-font">No Cake Pre-Bookings Yet</h3>
+        <p class="text-muted mb-4">Book in advance for birthdays, weddings, baby showers and anniversaries!</p>
+        <a href="{% url 'cakes:list' %}" class="btn btn-cake-primary px-4 py-2">Schedule A Cake</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

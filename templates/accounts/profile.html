@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}My Profile - SweetDelight{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row g-4">
+        <!-- Sidebar / User Info Card -->
+        <div class="col-lg-4">
+            <div class="card p-4 border-0 shadow-sm rounded-4 text-center bg-white mb-4">
+                <div class="position-relative d-inline-block mx-auto mb-3">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" class="rounded-circle shadow" style="width: 110px; height: 110px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm mx-auto" 
+                             style="width: 100px; height: 100px; background: var(--pastel-pink); color: var(--primary-deep); font-size: 2.5rem; font-weight: bold;">
+                            {{ user.first_name|default:user.username|slice:":1"|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <h4 class="fw-bold mb-1 brand-font">{{ user.get_full_name|default:user.username }}</h4>
+                <p class="text-muted small mb-2"><i class="fa-solid fa-envelope me-1"></i> {{ user.email }}</p>
+                <div>
+                    <span class="badge bg-secondary text-uppercase px-3 py-1">{{ user.role }}</span>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="d-grid gap-2 text-start">
+                    <a href="{% url 'orders:list' %}" class="btn btn-outline-secondary d-flex justify-content-between align-items-center py-2">
+                        <span><i class="fa-solid fa-box-open me-2 text-primary"></i> Order History</span>
+                        <i class="fa-solid fa-angle-right"></i>
+                    </a>
+                    <a href="{% url 'orders:my_bookings' %}" class="btn btn-outline-secondary d-flex justify-content-between align-items-center py-2">
+                        <span><i class="fa-solid fa-calendar-check me-2 text-warning"></i> Event Bookings</span>
+                        <i class="fa-solid fa-angle-right"></i>
+                    </a>
+                    <a href="{% url 'cart:wishlist' %}" class="btn btn-outline-secondary d-flex justify-content-between align-items-center py-2">
+                        <span><i class="fa-solid fa-heart me-2 text-danger"></i> Saved Wishlist</span>
+                        <i class="fa-solid fa-angle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Settings & Recent Activity -->
+        <div class="col-lg-8">
+            <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4 bg-white mb-4">
+                <h4 class="fw-bold brand-font mb-4"><i class="fa-solid fa-user-pen me-2 text-primary"></i> Update Profile Details</h4>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-cake-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Recent Orders preview -->
+            {% if orders %}
+            <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold brand-font mb-0">Recent Orders</h5>
+                    <a href="{% url 'orders:list' %}" class="small text-decoration-none" style="color: var(--primary-rose);">View All</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order #</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ord in orders %}
+                            <tr>
+                                <td class="fw-bold">{{ ord.order_number }}</td>
+                                <td class="small text-muted">{{ ord.created_at|date:"M d, Y" }}</td>
+                                <td class="fw-bold" style="color: var(--primary-deep);">₹{{ ord.total_amount }}</td>
+                                <td>
+                                    <span class="badge {% if ord.status == 'delivered' %}bg-success{% elif ord.status == 'cancelled' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                        {{ ord.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'orders:detail' ord.pk %}" class="btn btn-sm btn-outline-secondary py-0">Details</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

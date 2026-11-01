@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Bakery Management Dashboard - SweetDelight{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold brand-font mb-1"><i class="fa-solid fa-chart-pie text-primary me-2"></i> Store Operations Dashboard</h2>
+            <p class="text-muted small mb-0">Role: <span class="badge bg-primary text-uppercase">{{ user.role }}</span> | Real-time metrics and order pipeline</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/admin/cakes/cake/add/" class="btn btn-cake-primary btn-sm"><i class="fa-solid fa-plus me-1"></i> Add Cake</a>
+            <a href="/admin/" class="btn btn-outline-dark btn-sm"><i class="fa-solid fa-screwdriver-wrench me-1"></i> Admin Site</a>
+        </div>
+    </div>
+
+    <!-- Stat Metric Tiles -->
+    <div class="row g-4 mb-5">
+        <div class="col-sm-6 col-lg-3">
+            <div class="card p-3 border-0 shadow-sm rounded-4 bg-white border-start border-4 border-primary">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-bold text-uppercase">Cakes in Menu</span>
+                        <h2 class="fw-bold mb-0 mt-1">{{ total_cakes }}</h2>
+                    </div>
+                    <div class="p-3 rounded-circle" style="background: var(--pastel-pink); color: var(--primary-deep); font-size: 1.6rem;">
+                        <i class="fa-solid fa-cake-candles"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card p-3 border-0 shadow-sm rounded-4 bg-white border-start border-4 border-warning">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-bold text-uppercase">Pending Orders</span>
+                        <h2 class="fw-bold mb-0 mt-1 text-warning">{{ pending_orders }}</h2>
+                    </div>
+                    <div class="p-3 rounded-circle" style="background: #fff8e6; color: var(--gold-accent); font-size: 1.6rem;">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card p-3 border-0 shadow-sm rounded-4 bg-white border-start border-4 border-success">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-bold text-uppercase">Total Orders</span>
+                        <h2 class="fw-bold mb-0 mt-1 text-success">{{ total_orders }}</h2>
+                    </div>
+                    <div class="p-3 rounded-circle" style="background: #eafaf1; color: #2ecc71; font-size: 1.6rem;">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card p-3 border-0 shadow-sm rounded-4 bg-white border-start border-4 border-info">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-bold text-uppercase">Registered Users</span>
+                        <h2 class="fw-bold mb-0 mt-1 text-info">{{ total_users }}</h2>
+                    </div>
+                    <div class="p-3 rounded-circle" style="background: #e8f8f5; color: #17a2b8; font-size: 1.6rem;">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders Table -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+        <h4 class="fw-bold brand-font mb-3">Live Order Stream</h4>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Address</th>
+                        <th>Amount</th>
+                        <th>Order Status</th>
+                        <th>Payment</th>
+                        <th>Time</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ord in recent_orders %}
+                    <tr>
+                        <td class="fw-bold">{{ ord.order_number }}</td>
+                        <td>{{ ord.user.get_full_name|default:ord.user.username }}</td>
+                        <td class="small text-muted text-truncate" style="max-width: 180px;">{{ ord.delivery_address }}</td>
+                        <td class="fw-bold" style="color: var(--primary-deep);">₹{{ ord.total_amount }}</td>
+                        <td>
+                            <span class="badge {% if ord.status == 'delivered' %}bg-success{% elif ord.status == 'cancelled' %}bg-danger{% elif ord.status == 'pending' %}bg-warning text-dark{% else %}bg-primary{% endif %}">
+                                {{ ord.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if ord.payment_status == 'paid' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ ord.get_payment_status_display }}
+                            </span>
+                        </td>
+                        <td class="small text-muted">{{ ord.created_at|date:"M d, H:i" }}</td>
+                        <td>
+                            <a href="{% url 'orders:detail' ord.pk %}" class="btn btn-sm btn-outline-primary py-0">Review</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">No orders placed yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

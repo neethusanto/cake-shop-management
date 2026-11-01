@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Category: {{ category.name }} - SweetDelight{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'cakes:home' %}" class="text-decoration-none text-muted">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'cakes:list' %}" class="text-decoration-none text-muted">Categories</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="p-4 p-md-5 mb-4 rounded-4 text-white shadow-sm" style="background: linear-gradient(135deg, var(--primary-deep), #5c0f34);">
+        <div class="col-md-8 px-0">
+            <span class="badge bg-warning text-dark text-uppercase px-3 py-1 mb-2">Category Showcase</span>
+            <h1 class="display-5 fw-bold brand-font">{{ category.name }}</h1>
+            <p class="lead my-3 text-light text-opacity-90">{{ category.description|default:"Browse our exquisite selection of cakes made with love and premium ingredients." }}</p>
+        </div>
+    </div>
+
+    <!-- Cakes in this category -->
+    <div class="row g-4">
+        {% for cake in page_obj %}
+        <div class="col-lg-3 col-md-4 col-sm-6">
+            <div class="cake-card h-100 d-flex flex-column">
+                <div class="cake-card-img-wrap">
+                    {% if cake.thumbnail %}
+                        <img src="{{ cake.thumbnail.url }}" alt="{{ cake.name }}">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=600&q=80" alt="{{ cake.name }}">
+                    {% endif %}
+                </div>
+                <div class="card-body p-3 d-flex flex-column flex-grow-1">
+                    <h6 class="fw-bold mb-1"><a href="{% url 'cakes:detail' cake.slug %}" class="text-decoration-none text-dark">{{ cake.name }}</a></h6>
+                    <p class="text-muted small mb-2 flex-grow-1">{{ cake.description|truncatewords:8 }}</p>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <span class="price-current fs-5">₹{{ cake.get_effective_price }}</span>
+                        <a href="{% url 'cakes:detail' cake.slug %}" class="btn btn-sm btn-cake-primary">View</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <p class="text-muted">No cakes currently listed under this category.</p>
+            <a href="{% url 'cakes:list' %}" class="btn btn-cake-primary">Back to Full Menu</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
