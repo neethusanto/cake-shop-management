@@ -1,7 +1,12 @@
-# Python
-*.py[cod]
+# Byte-compiled / optimized / DLL files
 __pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
 *.so
+
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -15,11 +20,13 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# Virtual environments
+# Virtual Environments
 .venv/
 env/
 venv/
@@ -27,18 +34,24 @@ ENV/
 env.bak/
 venv.bak/
 
-# Django
+# Django specific
 *.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media/
+staticfiles/
 
-# Environment variables
+# Environment and sensitive variables
 .env
+.env.*
+!.env.example
 
-# IDEs
+# IDE & OS files
 .vscode/
 .idea/
-*.sublime-project
-*.sublime-workspace
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
